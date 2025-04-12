@@ -115,55 +115,55 @@ export const updateForum = async (request: AuthenticatedRequest) => {
   }
 };
 
-// export const deleteForum = async (
-//   request: AuthenticatedRequest,
-//   params?: { params: Record<string, string> }
-// ) => {
-//   try {
-//     const id = params?.params?.id;
+export const deleteForum = async (
+  request: AuthenticatedRequest,
+  params?: { params: Record<string, string> }
+) => {
+  try {
+    const id = params?.params?.id;
 
-//     if (!id) {
-//       return NextResponse.json({ message: "Id is required" }, { status: 400 });
-//     }
+    if (!id) {
+      return NextResponse.json({ message: "Id is required" }, { status: 400 });
+    }
 
-//     const isForumPresent = await prisma.forum.findUnique({
-//       where: {
-//         id: id,
-//       },
-//     });
+    const isForumPresent = await prisma.forum.findUnique({
+      where: {
+        id: id,
+      },
+    });
 
-//     if (!isForumPresent) {
-//       return NextResponse.json({ message: "Forum not found" }, { status: 404 });
-//     }
+    if (!isForumPresent) {
+      return NextResponse.json({ message: "Forum not found" }, { status: 404 });
+    }
 
-//     const isAuthor = isForumPresent?.authorId === request.user?.id;
+    const isAuthor = isForumPresent?.authorId === request.user?.id;
 
-//     if (!isAuthor) {
-//       return NextResponse.json(
-//         { message: "You are not authorized to delete this forum" },
-//         { status: 403 }
-//       );
-//     }
+    if (!isAuthor) {
+      return NextResponse.json(
+        { message: "You are not authorized to delete this forum" },
+        { status: 403 }
+      );
+    }
 
-//     const forum = await prisma.forum.delete({
-//       where: {
-//         id: id,
-//       },
-//     });
+    const forum = await prisma.forum.delete({
+      where: {
+        id: id,
+      },
+    });
 
-//     return NextResponse.json(
-//       { message: "Success", data: forum },
-//       { status: 200 }
-//     );
-//   } catch (error: any) {
-//     return NextResponse.json(
-//       { message: error.message, data: null },
-//       { status: 500 }
-//     );
-//   }
-// };
+    return NextResponse.json(
+      { message: "Success", data: forum },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: error.message, data: null },
+      { status: 500 }
+    );
+  }
+};
 
 export const GET = withAuth(getAllForums);
 export const POST = withAuth(createForum);
 export const PUT = withAuth(updateForum);
-// export const DELETE = withAuth(deleteForum);
+export const DELETE = withAuth(deleteForum);
