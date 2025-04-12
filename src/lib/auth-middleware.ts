@@ -10,10 +10,8 @@ export interface AuthenticatedRequest extends NextRequest {
 
 // Update this type to match the RouteContext from Next.js App Router
 export type RouteContext = {
-  params: Record<string, string>;
+  params: Promise<Record<string, string>>;
 };
-
-
 
 // Middleware function for authentication with proper types
 export function withAuth(
