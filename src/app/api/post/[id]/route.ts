@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
+import { AuthenticatedRequest, RouteContext, withAuth } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
 const getPost = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
+    const parameters = await context.params;
     if (!parameters || !parameters.id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
@@ -44,10 +44,10 @@ const getPost = async (
 
 const deletePost = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
+    const parameters = await context.params;
     if (!parameters || !parameters.id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
@@ -91,7 +91,7 @@ const deletePost = async (
   }
 };
 
-const updatePost = async (request: AuthenticatedRequest,  params?: { params: Record<string, string> }) => {
+const updatePost = async (request: AuthenticatedRequest,  context: RouteContext) => {
   try {
     const user_id = request.user?.id;
 
@@ -102,7 +102,7 @@ const updatePost = async (request: AuthenticatedRequest,  params?: { params: Rec
       );
     }
 
-    const parameters = await params?.params;
+    const parameters = await context.params;
     if (!parameters || !parameters.id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
