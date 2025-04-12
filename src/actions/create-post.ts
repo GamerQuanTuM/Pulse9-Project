@@ -8,14 +8,14 @@ interface CreatePostData {
   title: string;
   content: string;
   forumId: string;
-  image?: File | null;
+  image?: any;
 }
 
 export async function createPost(prevState: any, formData: FormData) {
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
   const forumId = formData.get("forumId") as string;
-  let image = formData.get("image") as File | null;
+  let image = formData.get("image") as any;
 
   if (!title || title.trim() === "") {
     return {
@@ -51,19 +51,16 @@ export async function createPost(prevState: any, formData: FormData) {
       forumId,
     };
 
-    if (image && image?.size > 0) {
+
+    if (image && image?.size != 0) {
       postData.image = image;
     }
 
-    const { data } = await serverAxiosInstance.post(
-      `${baseUrl}/post`,
-      postData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const { data } = await serverAxiosInstance.post(`/post`, postData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     // Revalidate the forum page to show the new post
     revalidatePath(`/forum/${forumId}`);

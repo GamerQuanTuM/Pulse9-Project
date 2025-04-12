@@ -4,18 +4,29 @@ import fs from "fs";
 import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
-const createPost = async (
-  request: AuthenticatedRequest,
-  params?: { params: Promise<{ id: string }> }
-) => {
+interface CreatePostBody {
+  title: string;
+  content: string;
+  forumId: string;
+  image?: string;
+}
+
+const createPost = async (request: AuthenticatedRequest) => {
   try {
     const user_id = request.user?.id;
 
+    if (!user_id) {
+      return NextResponse.json(
+        { message: "Unauthorized", data: null },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const forumId = formData.get("forumId") as string;
-    const image = formData.get("image") as string;
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    const forumId = formData.get('forumId') as string;
+    const image = formData.get('image') as string;
 
     if (!title || !content || !forumId) {
       return NextResponse.json(
@@ -37,6 +48,9 @@ const createPost = async (
         { status: 404 }
       );
     }
+
+  
+    console.log(image && "server image is present")
 
     // Upload image to public folder and get image url
     let imageUrl;
@@ -105,10 +119,7 @@ const createPost = async (
   }
 };
 
-const getPosts = async (
-  request: AuthenticatedRequest,
-  params?: { params: Promise<{ id: string }> }
-) => {
+const getPosts = async (request: AuthenticatedRequest) => {
   try {
     const posts = await prisma.post.findMany({
       include: {

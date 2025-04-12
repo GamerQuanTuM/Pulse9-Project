@@ -5,10 +5,10 @@ import serverAxiosInstance from "@/lib/server-axios";
 import { revalidatePath } from "next/cache";
 
 interface UpdatePostData {
-  id: string;
   title: string;
   content: string;
-  image?: File | null;
+  image?: any;
+  forumId: string;
 }
 
 export async function updatePost(prevState: any, formData: FormData) {
@@ -16,7 +16,7 @@ export async function updatePost(prevState: any, formData: FormData) {
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
   const forumId = formData.get("forumId") as string;
-  let image = formData.get("image") as File | null;
+  let image = formData.get("image") as any;
 
   if (!id) {
     return {
@@ -27,46 +27,23 @@ export async function updatePost(prevState: any, formData: FormData) {
     };
   }
 
-  if (!title || title.trim() === "") {
-    return {
-      success: false,
-      message: "Title is required",
-      errors: { title: "Title is required" },
-      data: null,
-    };
-  }
-
-  if (!content || content.trim() === "") {
-    return {
-      success: false,
-      message: "Content is required",
-      errors: { content: "Content is required" },
-      data: null,
-    };
-  }
-
   try {
     const postData: UpdatePostData = {
-      id,
       title,
       content,
+      forumId
     };
 
-    if (image && image?.size > 0) {
+    if (image && image?.size != 0) {
       postData.image = image;
     }
 
-    console.log(image);
+    const { data } = await serverAxiosInstance.put(`/post/${id}`, postData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-    const { data } = await serverAxiosInstance.put(
-      `${baseUrl}/post/${id}`,
-      postData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
 
     revalidatePath(`/forum/${forumId}`);
     revalidatePath(`/forum/${forumId}/post/${id}`);
@@ -77,7 +54,7 @@ export async function updatePost(prevState: any, formData: FormData) {
       errors: null,
       data,
     };
-  } catch (error) {
+  } catch (error:any) {
     console.error("Error updating post:", error);
     return {
       success: false,

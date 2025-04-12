@@ -12,23 +12,12 @@ export interface AuthenticatedRequest extends NextRequest {
 export function withAuth(
   handler: (
     req: AuthenticatedRequest,
-    { params }: { params: Promise<{ id: string }> }
+    params?: { params: Record<string, string> }
   ) => Promise<NextResponse>
 ) {
-  return async (
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
+  return async (request: NextRequest, params?: { params: Record<string, string> }) => {
     try {
       const token = request.headers.get("Authorization")?.split(" ")[1];
-      const parameters = await params;
-
-      if (!parameters || !parameters.id) {
-        return NextResponse.json(
-          { message: "Id is required" },
-          { status: 400 }
-        );
-      }
 
       if (!token) {
         return NextResponse.json(
@@ -37,19 +26,39 @@ export function withAuth(
         );
       }
 
+      // Verify and decode the JWT token
       const decodedToken = jwt.verify(
         token,
         process.env.JWT_SECRET as string
       ) as { sub: string; email: string };
 
+      if (!decodedToken.sub || !decodedToken.email) {
+        return NextResponse.json(
+          { message: "Invalid token payload" },
+          { status: 401 }
+        );
+      }
+
+      // Extend the request with user data
       const authenticatedRequest = request as AuthenticatedRequest;
       authenticatedRequest.user = {
         id: decodedToken.sub,
         email: decodedToken.email,
       };
 
-      return handler(authenticatedRequest, { params });
+      // Call the original handler with the authenticated request
+      return handler(authenticatedRequest, params);
     } catch (error: any) {
+      if (
+        error.name === "JsonWebTokenError" ||
+        error.name === "TokenExpiredError"
+      ) {
+        return NextResponse.json(
+          { message: "Invalid or expired token" },
+          { status: 401 }
+        );
+      }
+
       return NextResponse.json(
         { message: "Authentication error", error: error.message },
         { status: 500 }

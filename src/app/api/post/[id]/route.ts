@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
-import prisma from "@/lib/prisma";
 import path from "path";
 import fs from "fs";
+import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
+import prisma from "@/lib/prisma";
 
 const getPost = async (
   request: AuthenticatedRequest,
-  params?: { params: Promise<{ id: string }> }
+  params?: { params: Record<string, string> }
 ) => {
   try {
     const parameters = await params?.params;
@@ -44,7 +44,7 @@ const getPost = async (
 
 const deletePost = async (
   request: AuthenticatedRequest,
-  params?: { params: Promise<{ id: string }> }
+  params?: { params: Record<string, string> }
 ) => {
   try {
     const parameters = await params?.params;
@@ -91,32 +91,52 @@ const deletePost = async (
   }
 };
 
-
-const updatePost = async (
-  request: AuthenticatedRequest,
-  params?: { params: Promise<{ id: string }> }
-) => {
+const updatePost = async (request: AuthenticatedRequest,  params?: { params: Record<string, string> }) => {
   try {
+    const user_id = request.user?.id;
+
+    if (!user_id) {
+      return NextResponse.json(
+        { message: "Unauthorized", data: null },
+        { status: 401 }
+      );
+    }
+
     const parameters = await params?.params;
     if (!parameters || !parameters.id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
 
     const id = parameters.id;
-    const user_id = request.user?.id;
 
-    // Check if post exists and user is the author
-    const existingPost = await prisma.post.findUnique({
+    const formData = await request.formData();
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    const forumId = formData.get('forumId') as string;
+    const image = formData.get('image') as string;
+
+    // Check if forum exists
+    const forum = await prisma.forum.findUnique({
+      where: {
+        id: forumId,
+      },
+    });
+
+    if (!forum) {
+      return NextResponse.json(
+        { message: "Forum not found", data: null },
+        { status: 404 }
+      );
+    }
+
+    const isPostPresent = await prisma.post.findUnique({
       where: {
         id: id,
       },
     });
 
-    if (!existingPost) {
-      return NextResponse.json({ message: "Post not found" }, { status: 404 });
-    }
+    const isAuthor = isPostPresent?.authorId === request.user?.id;
 
-    const isAuthor = existingPost?.authorId === user_id;
     if (!isAuthor) {
       return NextResponse.json(
         { message: "You are not authorized to update this post" },
@@ -124,21 +144,9 @@ const updatePost = async (
       );
     }
 
-    const formData = await request.formData();
-    const title = formData.get('title') as string;
-    const content = formData.get('content') as string;
-    const image = formData.get('image') as string;
-
-    if (!title || !content) {
-      return NextResponse.json(
-        { message: "Title and content are required", data: null },
-        { status: 400 }
-      );
-    }
-
-    // Handle image update if provided
-    let imageUrl = existingPost.image;
-    if (image && image !== existingPost.image) {
+    // Upload image to public folder and get image url
+    let imageUrl;
+    if (image) {
       const imageBuffer = Buffer.from(
         image.replace(/^data:image\/\w+;base64,/, ""),
         "base64"
@@ -160,16 +168,32 @@ const updatePost = async (
       await fs.promises.writeFile(imagePath, imageBuffer);
 
       imageUrl = `/uploads/${imageName}`;
+      if (!imageUrl) {
+        return NextResponse.json(
+          { message: "Image upload failed", data: null },
+          { status: 500 }
+        );
+      }
     }
 
-    const updatedPost = await prisma.post.update({
+    const post = await prisma.post.update({
       where: {
-        id: id,
+        id,
       },
       data: {
         title,
         content,
         image: imageUrl,
+        author: {
+          connect: {
+            id: user_id,
+          },
+        },
+        forum: {
+          connect: {
+            id: forumId,
+          },
+        },
       },
       include: {
         author: true,
@@ -178,19 +202,18 @@ const updatePost = async (
     });
 
     return NextResponse.json(
-      { message: "Success", data: updatedPost },
-      { status: 200 }
+      { message: "Success", data: post },
+      { status: 201 }
     );
-  } catch (error: any) {
-    console.log(error)
-    console.error("Error updating post:", error);
+  }  catch (error: any) {
     return NextResponse.json(
       { message: error.message, data: null },
       { status: 500 }
-    );
+    ); 
   }
-};
+}
+
 
 export const DELETE = withAuth(deletePost);
-export const PUT = withAuth(updatePost);
 export const GET = withAuth(getPost);
+export const PUT = withAuth(updatePost);
