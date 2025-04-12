@@ -3,6 +3,8 @@ import ForumCard from "@/components/forum-card";
 import { getForums } from "@/actions/get-forums";
 import ForumDialog from "@/components/forum-dialog";
 
+export const dynamic = 'force-dynamic';
+
 const Home = async () => {
 
   const { data: forums = [], success } = await getForums();
