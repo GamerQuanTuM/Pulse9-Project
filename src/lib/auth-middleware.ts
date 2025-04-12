@@ -12,10 +12,10 @@ export interface AuthenticatedRequest extends NextRequest {
 export function withAuth(
   handler: (
     req: AuthenticatedRequest,
-    params?: { params: Record<string, string> }
+    context: { params: { id: string; email: string } }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, params?: { params: Record<string, string> }) => {
+  return async (request: NextRequest, context: { params: { id: string, email: string } }) => {
     try {
       const token = request.headers.get("Authorization")?.split(" ")[1];
 
@@ -26,39 +26,19 @@ export function withAuth(
         );
       }
 
-      // Verify and decode the JWT token
       const decodedToken = jwt.verify(
         token,
         process.env.JWT_SECRET as string
       ) as { sub: string; email: string };
 
-      if (!decodedToken.sub || !decodedToken.email) {
-        return NextResponse.json(
-          { message: "Invalid token payload" },
-          { status: 401 }
-        );
-      }
-
-      // Extend the request with user data
       const authenticatedRequest = request as AuthenticatedRequest;
       authenticatedRequest.user = {
         id: decodedToken.sub,
         email: decodedToken.email,
       };
 
-      // Call the original handler with the authenticated request
-      return handler(authenticatedRequest, params);
+      return handler(authenticatedRequest, context);
     } catch (error: any) {
-      if (
-        error.name === "JsonWebTokenError" ||
-        error.name === "TokenExpiredError"
-      ) {
-        return NextResponse.json(
-          { message: "Invalid or expired token" },
-          { status: 401 }
-        );
-      }
-
       return NextResponse.json(
         { message: "Authentication error", error: error.message },
         { status: 500 }
