@@ -16,7 +16,7 @@ interface UpdateForumBody {
   id: string
 }
 
-export async function getAllForums(request: AuthenticatedRequest, context: RouteContext) {
+export async function getAllForums(request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) {
   try {
     const forums = await prisma.forum.findMany({
       include: {
@@ -31,7 +31,7 @@ export async function getAllForums(request: AuthenticatedRequest, context: Route
   }
 }
 
-export const createForum = async (request: AuthenticatedRequest, context: RouteContext) => {
+export const createForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
   const user_id = request.user?.id
 
   const { title } = (await request.json()) as CreateForumBody
@@ -54,7 +54,7 @@ export const createForum = async (request: AuthenticatedRequest, context: RouteC
   return NextResponse.json({ message: "Success", data: forum }, { status: 201 })
 }
 
-export const updateForum = async (request: AuthenticatedRequest, context: RouteContext) => {
+export const updateForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
   try {
     const user_id = request.user?.id
 
@@ -95,14 +95,15 @@ export const updateForum = async (request: AuthenticatedRequest, context: RouteC
   }
 }
 
-export const deleteForum = async (request: AuthenticatedRequest, context: RouteContext) => {
+export const deleteForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
   try {
     // Extract the id from context.params, handling both string and string[] cases
-    const id = typeof context.params.id === "string" ? context.params.id : context.params.id?.[0]
-
-    if (!id) {
-      return NextResponse.json({ message: "Id is required" }, { status: 400 })
+    const parameters = await params?.params;
+    if (!parameters || !parameters.id) {
+      return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
+
+    const id = parameters.id;
 
     const isForumPresent = await prisma.forum.findUnique({
       where: {

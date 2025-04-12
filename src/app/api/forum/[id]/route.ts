@@ -9,14 +9,15 @@ type RouteContext = {
 
 const getForum = async (
   request: AuthenticatedRequest,
-  context: RouteContext
+  params?: { params: Promise<{ id: string }> }
 ) => {
   try {
-    const id = typeof context.params.id === "string" ? context.params.id : context.params.id?.[0]
-
-    if (!id) {
-      return NextResponse.json({ message: "Id is required" }, { status: 400 })
+    const parameters = await params?.params;
+    if (!parameters || !parameters.id) {
+      return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
+
+    const id = parameters.id;
 
     const forum = await prisma.forum.findUnique({
       where: {
@@ -61,15 +62,15 @@ const getForum = async (
 
 const deleteForum = async (
   request: AuthenticatedRequest,
-  context: RouteContext
+  params?: { params: Promise<{ id: string }> }
 ) => {
   try {
-     // Extract the id parameter, handling both string and string[] cases
-     const id = typeof context.params.id === "string" ? context.params.id : context.params.id?.[0]
+    const parameters = await params?.params;
+    if (!parameters || !parameters.id) {
+      return NextResponse.json({ message: "Id is required" }, { status: 400 });
+    }
 
-     if (!id) {
-       return NextResponse.json({ message: "Id is required" }, { status: 400 })
-     }
+    const id = parameters.id;
 
     const isForumPresent = await prisma.forum.findUnique({
       where: {

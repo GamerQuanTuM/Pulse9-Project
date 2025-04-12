@@ -1,39 +1,59 @@
-import { type NextRequest, NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
-    id: string
-    email: string
-  }
-}
-
-// Define the correct RouteContext type to match Next.js expectations
-type RouteContext = {
-  params: { [key: string]: string | string[] }
+    id: string;
+    email: string;
+  };
 }
 
 // Middleware function for authentication
-export function withAuth(handler: (req: AuthenticatedRequest, context: RouteContext) => Promise<NextResponse>) {
-  return async (request: NextRequest, context: RouteContext) => {
+export function withAuth(
+  handler: (
+    req: AuthenticatedRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) => Promise<NextResponse>
+) {
+  return async (
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) => {
     try {
-      const token = request.headers.get("Authorization")?.split(" ")[1]
+      const token = request.headers.get("Authorization")?.split(" ")[1];
+      const parameters = await params;
 
-      if (!token) {
-        return NextResponse.json({ message: "Unauthorized - No token provided" }, { status: 401 })
+      if (!parameters || !parameters.id) {
+        return NextResponse.json(
+          { message: "Id is required" },
+          { status: 400 }
+        );
       }
 
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as { sub: string; email: string }
+      if (!token) {
+        return NextResponse.json(
+          { message: "Unauthorized - No token provided" },
+          { status: 401 }
+        );
+      }
 
-      const authenticatedRequest = request as AuthenticatedRequest
+      const decodedToken = jwt.verify(
+        token,
+        process.env.JWT_SECRET as string
+      ) as { sub: string; email: string };
+
+      const authenticatedRequest = request as AuthenticatedRequest;
       authenticatedRequest.user = {
         id: decodedToken.sub,
         email: decodedToken.email,
-      }
+      };
 
-      return handler(authenticatedRequest, context)
+      return handler(authenticatedRequest, { params });
     } catch (error: any) {
-      return NextResponse.json({ message: "Authentication error", error: error.message }, { status: 500 })
+      return NextResponse.json(
+        { message: "Authentication error", error: error.message },
+        { status: 500 }
+      );
     }
-  }
+  };
 }
