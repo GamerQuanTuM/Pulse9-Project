@@ -38,7 +38,6 @@ export async function getAllForums() {
 
 export const createForum = async (request: AuthenticatedRequest) => {
   const user_id = request.user?.id;
-  const user_email = request.user?.email;
 
   const { title } = (await request.json()) as CreateForumBody;
 
@@ -55,7 +54,6 @@ export const createForum = async (request: AuthenticatedRequest) => {
       author: {
         connect: {
           id: user_id,
-          email: user_email,
         },
       },
     },
@@ -70,7 +68,6 @@ export const createForum = async (request: AuthenticatedRequest) => {
 export const updateForum = async (request: AuthenticatedRequest) => {
   try {
     const user_id = request.user?.id;
-    const user_email = request.user?.email;
 
     const { title, id } = (await request.json()) as UpdateForumBody;
 
