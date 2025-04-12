@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
-export const getForum = async (
+const getForum = async (
   request: AuthenticatedRequest,
   params?: { params: Record<string, string> }
 ) => {
@@ -55,7 +55,7 @@ export const getForum = async (
   }
 };
 
-export const deleteForum = async (
+const deleteForum = async (
   request: AuthenticatedRequest,
   params?: { params: Record<string, string> }
 ) => {

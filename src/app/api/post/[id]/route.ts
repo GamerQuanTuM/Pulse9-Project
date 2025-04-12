@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import path from "path";
 import fs from "fs";
 
-export const getPost = async (
+const getPost = async (
   request: AuthenticatedRequest,
   params?: { params: Record<string, string> }
 ) => {
@@ -42,7 +42,7 @@ export const getPost = async (
   }
 };
 
-export const deletePost = async (
+const deletePost = async (
   request: AuthenticatedRequest,
   params?: { params: Record<string, string> }
 ) => {
@@ -92,7 +92,7 @@ export const deletePost = async (
 };
 
 
-export const updatePost = async (
+const updatePost = async (
   request: AuthenticatedRequest,
   params?: { params: Record<string, string> }
 ) => {

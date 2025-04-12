@@ -4,7 +4,7 @@ import fs from "fs";
 import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
-export const createPost = async (request: AuthenticatedRequest) => {
+const createPost = async (request: AuthenticatedRequest) => {
   try {
     const user_id = request.user?.id;
 
@@ -102,7 +102,7 @@ export const createPost = async (request: AuthenticatedRequest) => {
   }
 };
 
-export const getPosts = async (request: AuthenticatedRequest) => {
+const getPosts = async (request: AuthenticatedRequest) => {
   try {
     const posts = await prisma.post.findMany({
       include: {
