@@ -1,4 +1,4 @@
-import { withAuth, AuthenticatedRequest } from "@/lib/auth-middleware";
+import { withAuth, AuthenticatedRequest, RouteContext } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -120,10 +120,11 @@ const updateForum = async (request: AuthenticatedRequest) => {
 
 const deleteForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const id = params?.params?.id;
+    const parameters = await context.params;
+    const id = parameters.id;
 
     if (!id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
