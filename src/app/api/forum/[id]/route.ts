@@ -2,17 +2,21 @@ import { NextResponse } from "next/server";
 import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
+// Define the correct RouteContext type to match what withAuth expects
+type RouteContext = {
+  params: { [key: string]: string | string[] }
+}
+
 const getForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
-    if (!parameters || !parameters.id) {
-      return NextResponse.json({ message: "Id is required" }, { status: 400 });
-    }
+    const id = typeof context.params.id === "string" ? context.params.id : context.params.id?.[0]
 
-    const id = parameters.id;
+    if (!id) {
+      return NextResponse.json({ message: "Id is required" }, { status: 400 })
+    }
 
     const forum = await prisma.forum.findUnique({
       where: {
@@ -57,15 +61,15 @@ const getForum = async (
 
 const deleteForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
-    if (!parameters || !parameters.id) {
-      return NextResponse.json({ message: "Id is required" }, { status: 400 });
-    }
+     // Extract the id parameter, handling both string and string[] cases
+     const id = typeof context.params.id === "string" ? context.params.id : context.params.id?.[0]
 
-    const id = parameters.id;
+     if (!id) {
+       return NextResponse.json({ message: "Id is required" }, { status: 400 })
+     }
 
     const isForumPresent = await prisma.forum.findUnique({
       where: {
