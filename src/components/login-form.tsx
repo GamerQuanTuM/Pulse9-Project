@@ -33,7 +33,6 @@ export function LoginForm({
   useEffect(() => {
     if (state.success) {
       localStorage.setItem("token", state.data.data.token);
-      document.cookie = `token=${state.data.data.token}; path=/; max-age=604800`;
       router.push("/");
     }
   }, [state]);

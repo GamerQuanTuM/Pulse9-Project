@@ -2,6 +2,7 @@
 
 import { baseUrl } from "@/constants/baseUrl";
 import axios from "axios";
+import { cookies } from "next/headers";
 
 export async function login(prevState: any, formData: FormData) {
   const name = formData.get("name") as string;
@@ -13,6 +14,13 @@ export async function login(prevState: any, formData: FormData) {
       name,
       email,
       password,
+    });
+    const cookieStore = await cookies();
+    cookieStore.set("token", data.data.token, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
     });
     return {
       success: true,
