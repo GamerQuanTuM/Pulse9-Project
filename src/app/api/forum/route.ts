@@ -16,7 +16,7 @@ interface UpdateForumBody {
   id: string
 }
 
-export async function getAllForums(request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) {
+async function getAllForums(request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) {
   try {
     const forums = await prisma.forum.findMany({
       include: {
@@ -31,7 +31,7 @@ export async function getAllForums(request: AuthenticatedRequest, params?: { par
   }
 }
 
-export const createForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
+const createForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
   const user_id = request.user?.id
 
   const { title } = (await request.json()) as CreateForumBody
@@ -54,7 +54,7 @@ export const createForum = async (request: AuthenticatedRequest, params?: { para
   return NextResponse.json({ message: "Success", data: forum }, { status: 201 })
 }
 
-export const updateForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
+const updateForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
   try {
     const user_id = request.user?.id
 
@@ -95,7 +95,7 @@ export const updateForum = async (request: AuthenticatedRequest, params?: { para
   }
 }
 
-export const deleteForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
+const deleteForum = async (request: AuthenticatedRequest, params?: { params: Promise<{ id: string }> }) => {
   try {
     // Extract the id from context.params, handling both string and string[] cases
     const parameters = await params?.params;

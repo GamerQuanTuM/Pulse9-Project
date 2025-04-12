@@ -92,7 +92,7 @@ const deletePost = async (
 };
 
 
-export const updatePost = async (
+const updatePost = async (
   request: AuthenticatedRequest,
   params?: { params: Promise<{ id: string }> }
 ) => {

@@ -4,15 +4,18 @@ import fs from "fs";
 import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
-const createPost = async (request: AuthenticatedRequest) => {
+const createPost = async (
+  request: AuthenticatedRequest,
+  params?: { params: Promise<{ id: string }> }
+) => {
   try {
     const user_id = request.user?.id;
 
     const formData = await request.formData();
-    const title = formData.get('title') as string;
-    const content = formData.get('content') as string;
-    const forumId = formData.get('forumId') as string;
-    const image = formData.get('image') as string;
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const forumId = formData.get("forumId") as string;
+    const image = formData.get("image") as string;
 
     if (!title || !content || !forumId) {
       return NextResponse.json(
@@ -102,7 +105,10 @@ const createPost = async (request: AuthenticatedRequest) => {
   }
 };
 
-const getPosts = async (request: AuthenticatedRequest) => {
+const getPosts = async (
+  request: AuthenticatedRequest,
+  params?: { params: Promise<{ id: string }> }
+) => {
   try {
     const posts = await prisma.post.findMany({
       include: {
