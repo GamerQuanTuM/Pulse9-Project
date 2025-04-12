@@ -12,10 +12,10 @@ export interface AuthenticatedRequest extends NextRequest {
 export function withAuth(
   handler: (
     req: AuthenticatedRequest,
-    context: { params: { id: string; email: string } }
+    context?: { params: Record<string, string> }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context: { params: { id: string, email: string } }) => {
+  return async (request: NextRequest, context?: { params: Record<string, string> }) => {
     try {
       const token = request.headers.get("Authorization")?.split(" ")[1];
 
