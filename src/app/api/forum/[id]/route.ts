@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
-import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
+import {
+  AuthenticatedRequest,
+  RouteContext,
+  withAuth,
+} from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
 const getForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
+    const parameters = await context.params;
     if (!parameters || !parameters.id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
@@ -57,10 +61,10 @@ const getForum = async (
 
 const deleteForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
+    const parameters = await context.params;
     if (!parameters || !parameters.id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
@@ -105,4 +109,4 @@ const deleteForum = async (
 };
 
 export const DELETE = withAuth(deleteForum);
-export const GET = (getForum);
+export const GET = withAuth(getForum);
