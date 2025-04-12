@@ -8,19 +8,14 @@ export interface AuthenticatedRequest extends NextRequest {
   };
 }
 
-// Update this type to match the RouteContext from Next.js App Router
-export type RouteContext = {
-  params: Record<string, string>;
-};
-
-// Middleware function for authentication with proper types
+// Middleware function for authentication
 export function withAuth(
   handler: (
     req: AuthenticatedRequest,
-    context: RouteContext
+    params?: { params: Record<string, string> }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context: RouteContext) => {
+  return async (request: NextRequest, params?: { params: Record<string, string> }) => {
     try {
       const token = request.headers.get("Authorization")?.split(" ")[1];
 
@@ -51,8 +46,8 @@ export function withAuth(
         email: decodedToken.email,
       };
 
-      // Call the original handler with the authenticated request and proper context
-      return handler(authenticatedRequest, context);
+      // Call the original handler with the authenticated request
+      return handler(authenticatedRequest, params);
     } catch (error: any) {
       if (
         error.name === "JsonWebTokenError" ||
