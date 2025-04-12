@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
-import { AuthenticatedRequest, withAuth } from "@/lib/auth-middleware";
+import {
+  AuthenticatedRequest,
+  RouteContext,
+  withAuth,
+} from "@/lib/auth-middleware";
 import prisma from "@/lib/prisma";
 
 const getForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
-    if (!parameters || !parameters.id) {
+    const id = context.params.id;
+
+    if (!id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
-
-    const id = parameters.id;
 
     const forum = await prisma.forum.findUnique({
       where: {
@@ -57,15 +60,14 @@ const getForum = async (
 
 const deleteForum = async (
   request: AuthenticatedRequest,
-  params?: { params: Record<string, string> }
+  context: RouteContext
 ) => {
   try {
-    const parameters = await params?.params;
-    if (!parameters || !parameters.id) {
+    const id = context.params.id;
+
+    if (!id) {
       return NextResponse.json({ message: "Id is required" }, { status: 400 });
     }
-
-    const id = parameters.id;
 
     const isForumPresent = await prisma.forum.findUnique({
       where: {
