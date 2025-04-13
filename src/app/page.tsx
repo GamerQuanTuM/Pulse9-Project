@@ -2,13 +2,14 @@ import React from "react";
 import ForumCard from "@/components/forum-card";
 import { getForums } from "@/actions/get-forums";
 import ForumDialog from "@/components/forum-dialog";
+import { serverProfile } from "@/actions/server-profile";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const Home = async () => {
-
   const { data: forums = [], success } = await getForums();
-
+  const { data } = await serverProfile();
+  
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 container mx-auto px-4 py-8">
@@ -24,7 +25,7 @@ const Home = async () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {forums?.map((forum: Forum) => (
-              <ForumCard key={forum.id} forum={forum} />
+              <ForumCard key={forum.id} forum={forum} user={data.data} />
             ))}
           </div>
         )}

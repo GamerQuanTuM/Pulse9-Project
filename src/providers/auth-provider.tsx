@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkAuthStatus = async () => {
+    setLoading(true);
     try {
       // Check local storage or token validity
       const token = localStorage.getItem("token");
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Get author profile
         const userData = await getProfile();
         setAuthor(userData);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Auth status check failed:", error);
@@ -43,9 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
 
-  const logout = () => {
-    localStorage.removeItem("authToken");
-    setAuthor(null);
+  const logout = async () => {
+    try {
+      await clientAxiosInstance.get("/logout");
+      localStorage.removeItem("token");
+      setAuthor(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const value = {

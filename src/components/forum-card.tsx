@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -16,17 +16,17 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useAuth } from "@/providers/auth-provider";
 import { deleteForum } from "@/actions/delete-forum";
+import LoadingSkeleton from "./loading-skeleton";
 
 interface ForumCardProps {
   forum: Forum;
+  user: Author;
 }
 
-const ForumCard = ({ forum }: ForumCardProps) => {
+const ForumCard = ({ forum, user: author }: ForumCardProps) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-
-  const { author } = useAuth();
-
+  
   const handleDelete = async () => {
     startTransition(async () => {
       await deleteForum(forum.id);
