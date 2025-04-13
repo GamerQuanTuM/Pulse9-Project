@@ -178,11 +178,12 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "postgresql://pulse9_owner:npg_i4Pol0wbLWFK@ep-plain-queen-a1k993lq-pooler.ap-southeast-1.aws.neon.tech/pulse9?sslmode=require"
+        "value": null
       }
     }
   },
