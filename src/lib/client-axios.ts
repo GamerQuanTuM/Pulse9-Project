@@ -1,7 +1,9 @@
+import { baseUrl } from '@/constants/baseUrl';
 import axios from 'axios';
 
 const clientAxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api',
+  baseURL: baseUrl || 'http://localhost:3000/api',
+  timeout: 10000,
 });
 
 // Add request interceptor
