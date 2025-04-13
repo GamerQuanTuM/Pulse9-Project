@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    return handleCORS(new NextResponse(null, { status: 204 }))
+  }
+  
+  // Get token and pathname for auth checks
   const token = request.cookies.get('token')?.value
   const { pathname } = request.nextUrl
 
@@ -18,7 +24,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  return NextResponse.next()
+  // For non-redirected requests, add CORS headers and continue
+  return handleCORS(NextResponse.next())
+}
+
+// Helper function to add CORS headers to responses
+function handleCORS(response: NextResponse) {
+  // Set CORS headers
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token')
+  response.headers.set('Access-Control-Allow-Credentials', 'true')
+  response.headers.set('Access-Control-Max-Age', '86400')
+  
+  return response
 }
 
 export const config = {

@@ -12,6 +12,7 @@ import {
 } from "./ui/card";
 import { deletePost } from "@/actions/delete-post";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Posts = ({
   posts,
@@ -55,12 +56,14 @@ const Posts = ({
             </CardHeader>
             <CardContent>
               <div className="mt-4 h-40 bg-muted rounded-md overflow-hidden">
-                <img
+                <Image
                   src={
                     post.image ??
                     "https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg"
                   }
                   alt={post.title}
+                  height={500}
+                  width={500}
                   className="w-full h-full object-cover"
                 />
               </div>
